@@ -2,14 +2,12 @@
 import contextlib
 from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords, wordnet
-import mmh3
 import numpy as np
 import contextlib
-import numpy as np
 import string
 import nltk
 import json
-
+import copy
 import spacy
 import lemminflect
 nlp = spacy.load('en_core_web_sm', disable=['ner', 'parser'])
@@ -31,6 +29,7 @@ en_stopwords = set(stopwords.words('english'))
 
 with open('data/fairytales_iterative_vectors.json', 'r') as f:
     iterative_vectors = json.load(f)
+    preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
 with open('data/fairytales_word_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
@@ -54,7 +53,7 @@ def generate_vector(word, tokenized_sentence, bits, deltas):
                 except KeyError:
                     tf_idf = 0
                 try:
-                    instance_representation += np.array(iterative_vectors[adjacent_word]) * tf_idf
+                    instance_representation += np.array(preassign_iterative_vectors[adjacent_word]) * tf_idf
                 except:
                     instance_representation += np.array(bloom_filters[adjacent_word]) * tf_idf 
                     # generate new bloom filter to represent word if vector is not found
