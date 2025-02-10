@@ -9,7 +9,9 @@ import nltk
 import json
 import copy
 import spacy
+import itertools
 import lemminflect
+
 nlp = spacy.load('en_core_web_sm', disable=['ner', 'parser'])
 POS = ("CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB")
 
@@ -29,7 +31,6 @@ en_stopwords = set(stopwords.words('english'))
 
 with open('data/fairytales_iterative_vectors.json', 'r') as f:
     iterative_vectors = json.load(f)
-    preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
 with open('data/fairytales_word_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
@@ -41,7 +42,7 @@ def generate_vector(word, tokenized_sentence, bits, deltas):
     indices = [i for i, x in enumerate(tokenized_sentence) if x == word]
     instance_representation = np.zeros(bits)
     adjacent_words = 0
-    
+
     for index in indices:
         for delta in deltas:
             if index + delta < 0:
@@ -54,9 +55,8 @@ def generate_vector(word, tokenized_sentence, bits, deltas):
                     tf_idf = 0
                 try:
                     instance_representation += np.array(preassign_iterative_vectors[adjacent_word]) * tf_idf
-                except:
-                    instance_representation += np.array(bloom_filters[adjacent_word]) * tf_idf 
-                    # generate new bloom filter to represent word if vector is not found
+                except Exception:
+                    instance_representation += np.array(bloom_filters[adjacent_word]) * tf_idf
                 adjacent_words += 1
     return instance_representation, adjacent_words
 
@@ -84,9 +84,16 @@ def store_encoding(word, fname, args):
     with open(fname, 'w') as f:
         json.dump(iterative_vectors, f, indent=4)
 
+def normalize_vector(): # dimensions sum to 1
+    for word in iterative_vectors.keys():
+        vector_sum = sum(iterative_vectors[word])
+        iterative_vectors[word] = list(np.array(iterative_vectors[word]) / vector_sum)
+
 if __name__ == '__main__':
     ITERATIONS = 50
     for i in range(ITERATIONS): 
+        preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             store_encoding(word, 'data/fairytales_iterative_vectors.json', {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
+        normalize_vector()
