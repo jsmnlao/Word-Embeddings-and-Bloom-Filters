@@ -72,22 +72,15 @@ def extract_vectors(word, deltas=None, bits=32):
             representation, adjacent_words = generate_vector(word, sentence, bits, deltas)
             representations += representation
             total_adjacent_words += adjacent_words
-    iterative_vectors[word] = representations
     return representations / float(total_adjacent_words)
 
-def store_encoding(word, fname, args):
-    vector = list(extract_vectors(word, **args))
-    
-    with open(fname, 'r') as f:
-        iterative_vectors = json.load(f)
+def update_encoding(word, args):
+    vector = extract_vectors(word, **args)
     iterative_vectors[word] = vector
-    with open(fname, 'w') as f:
-        json.dump(iterative_vectors, f, indent=4)
 
 def normalize_vector(): # dimensions sum to 1
     for word in iterative_vectors.keys():
-        vector_sum = sum(iterative_vectors[word])
-        iterative_vectors[word] = list(np.array(iterative_vectors[word]) / vector_sum)
+        iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
 if __name__ == '__main__':
     ITERATIONS = 50
@@ -95,5 +88,7 @@ if __name__ == '__main__':
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
-            store_encoding(word, 'data/fairytales_iterative_vectors.json', {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
+            update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         normalize_vector()
+        with open('data/fairytales_iterative_vectors.json', 'w') as f:
+            json.dump(iterative_vectors, f, indent=4)
