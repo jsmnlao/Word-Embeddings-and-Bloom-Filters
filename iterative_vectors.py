@@ -29,8 +29,6 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 en_stopwords = set(stopwords.words('english'))
 
-with open('data/fairytales_iterative_vectors.json', 'r') as f:
-    iterative_vectors = json.load(f)
 with open('data/fairytales_word_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
@@ -83,12 +81,13 @@ def normalize_vector(): # dimensions sum to 1
         iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
 if __name__ == '__main__':
-    ITERATIONS = 50
+    ITERATIONS = 100
+    iterative_vectors = {}
     for i in range(ITERATIONS): 
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         normalize_vector()
-        with open('data/fairytales_iterative_vectors.json', 'w') as f:
+        with open(f'data/fairytales_iterative_vectors_{i}.json', 'w') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
