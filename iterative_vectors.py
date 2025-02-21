@@ -89,5 +89,5 @@ if __name__ == '__main__':
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         normalize_vector()
-        with open(f'data/fairytales_iterative_vectors_{i}.json', 'w') as f: # save in separate files
+        with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
