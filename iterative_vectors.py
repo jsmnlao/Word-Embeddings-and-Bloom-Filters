@@ -81,7 +81,7 @@ def normalize_vector(): # dimensions sum to 1
         iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
 if __name__ == '__main__':
-    ITERATIONS = 20
+    ITERATIONS = 10
     iterative_vectors = {}
     for i in range(ITERATIONS): 
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
