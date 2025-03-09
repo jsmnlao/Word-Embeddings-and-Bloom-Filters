@@ -12,6 +12,9 @@ import spacy
 import itertools
 import lemminflect
 
+default = lambda x: x
+scale_func_square = lambda x: x**2
+
 nlp = spacy.load('en_core_web_sm', disable=['ner', 'parser'])
 POS = ("CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB")
 
@@ -36,7 +39,7 @@ with open('data/fairytales_word_bloom-filters.json', 'r') as f:
 with open('data/fairytales_tokenized.json', 'r') as f:
     tokenized_corpus = json.load(f)
 
-def generate_vector(word, tokenized_sentence, bits, deltas):
+def generate_vector(word, tokenized_sentence, bits, deltas, scale_func):
     indices = [i for i, x in enumerate(tokenized_sentence) if x == word]
     instance_representation = np.zeros(bits)
     adjacent_words = 0
@@ -52,13 +55,13 @@ def generate_vector(word, tokenized_sentence, bits, deltas):
                 except KeyError:
                     tf_idf = 0
                 try:
-                    instance_representation += np.array(preassign_iterative_vectors[adjacent_word]) * tf_idf
+                    instance_representation += np.array(preassign_iterative_vectors[adjacent_word]) * scale_func(tf_idf)
                 except Exception:
-                    instance_representation += np.array(bloom_filters[adjacent_word]) * tf_idf
+                    instance_representation += np.array(bloom_filters[adjacent_word]) * scale_func(tf_idf)
                 adjacent_words += 1
     return instance_representation, adjacent_words
 
-def extract_vectors(word, deltas=None, bits=32):
+def extract_vectors(word, deltas=None, bits=32, scale_func=default):
     if deltas is None:
         deltas = [-4, -3, -2, -1, 1, 2, 3, 4]
 
@@ -67,7 +70,7 @@ def extract_vectors(word, deltas=None, bits=32):
 
     for sentence in tokenized_corpus:
         if word in sentence:
-            representation, adjacent_words = generate_vector(word, sentence, bits, deltas)
+            representation, adjacent_words = generate_vector(word, sentence, bits, deltas, scale_func)
             representations += representation
             total_adjacent_words += adjacent_words
     return representations / float(total_adjacent_words)
@@ -87,7 +90,10 @@ if __name__ == '__main__':
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
-            update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
+            update_encoding(word, 
+                            {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 
+                             'bits':32,
+                             'scale_func': scale_func_square})
         normalize_vector()
-        with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
+        with open(f'data/iterative_vectors_squared/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
