@@ -89,6 +89,7 @@ if __name__ == '__main__':
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
-        normalize_vector()
+        # normalize_vector()
+        iterative_vectors = {word: list(vector - 1) for word, vector in iterative_vectors.items()} # normalize
         with open(f'data/iterative_vectors_dropped_tf-idfs/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
