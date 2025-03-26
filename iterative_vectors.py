@@ -9,7 +9,6 @@ import nltk
 import json
 import copy
 import spacy
-import itertools
 import lemminflect
 
 nlp = spacy.load('en_core_web_sm', disable=['ner', 'parser'])
@@ -89,8 +88,6 @@ if __name__ == '__main__':
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
-        # normalize_vector()
-        for word in iterative_vectors:
-            iterative_vectors[word] = list(iterative_vectors[word])
+        normalize_vector()
         with open(f'data/iterative_vectors_dropped_tf-idfs/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
