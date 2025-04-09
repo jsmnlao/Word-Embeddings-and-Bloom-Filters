@@ -28,13 +28,16 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 en_stopwords = set(stopwords.words('english'))
 
-# with open('data/fairytales_word_tf-idfs.json', 'r') as f:
-with open('data/fairytales_word_tf-idfs_drop.json', 'r') as f:
+with open('data/fairytales_word_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
     bloom_filters = json.load(f)
 with open('data/fairytales_tokenized.json', 'r') as f:
     tokenized_corpus = json.load(f)
+
+def rescale_bloom_filter():
+    for word in bloom_filters.keys():
+        bloom_filters[word] = np.array(bloom_filters[word], dtype=int) * (32/3) - 1
 
 def generate_vector(word, tokenized_sentence, bits, deltas):
     indices = [i for i, x in enumerate(tokenized_sentence) if x == word]
@@ -70,17 +73,22 @@ def extract_vectors(word, deltas=None, bits=32):
             representation, adjacent_words = generate_vector(word, sentence, bits, deltas)
             representations += representation
             total_adjacent_words += adjacent_words
-    return representations / float(total_adjacent_words)
+    return representations / total_adjacent_words
 
 def update_encoding(word, args):
     vector = extract_vectors(word, **args)
     iterative_vectors[word] = vector
 
-def normalize_vector(): # dimensions sum to 1
+def normalize_vector(): # vector length is 1
     for word in iterative_vectors.keys():
         iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
+def sigmoid_normalize_vectors():
+    for word in iterative_vectors.keys():
+        iterative_vectors[word] = list(2 / (1 + np.exp(-iterative_vectors[word])) - 1) # sigmoid function + scale to pos/neg
+
 if __name__ == '__main__':
+    rescale_bloom_filter()
     ITERATIONS = 10
     iterative_vectors = {}
     for i in range(ITERATIONS): 
@@ -89,5 +97,5 @@ if __name__ == '__main__':
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         normalize_vector()
-        with open(f'data/iterative_vectors_dropped_tf-idfs/{i}.json', 'w+') as f: # save in separate files
+        with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
