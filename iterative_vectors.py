@@ -83,10 +83,10 @@ def normalize_vector(): # vector length is 1
     for word in iterative_vectors.keys():
         iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
-def normalize_vector_dimensions():
+def normalize_vector_dimensions(iterative_vectors):
     vectors = np.array(list(iterative_vectors.values()))
     vectors = (vectors - vectors.min(axis=0)) / np.ptp(vectors, axis=0) * 2 - 1 # normalize along columns (dimensions)
-    iterative_vectors = {
+    return {
         word: list(vectors[i]) for i, word in enumerate(iterative_vectors.keys())
     }
 
@@ -103,6 +103,6 @@ if __name__ == '__main__':
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
-        normalize_vector_dimensions()
+        iterative_vectors = normalize_vector_dimensions(iterative_vectors)
         with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
