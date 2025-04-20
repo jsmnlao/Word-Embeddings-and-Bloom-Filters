@@ -83,19 +83,26 @@ def normalize_vector(): # vector length is 1
     for word in iterative_vectors.keys():
         iterative_vectors[word] = list(iterative_vectors[word] / np.linalg.norm(iterative_vectors[word])) # normalized & list conversion
 
+def normalize_vector_dimensions():
+    vectors = np.array(list(iterative_vectors.values()))
+    vectors = (vectors - vectors.min(axis=0)) / np.ptp(vectors, axis=0) * 2 - 1 # normalize along columns (dimensions)
+    iterative_vectors = {
+        word: list(vectors[i]) for i, word in enumerate(iterative_vectors.keys())
+    }
+
 def sigmoid_normalize_vectors():
     for word in iterative_vectors.keys():
         iterative_vectors[word] = list(2 / (1 + np.exp(-iterative_vectors[word])) - 1) # sigmoid function + scale to pos/neg
 
 if __name__ == '__main__':
     rescale_bloom_filter()
-    ITERATIONS = 10
+    ITERATIONS = 20
     iterative_vectors = {}
     for i in range(ITERATIONS): 
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
         for word in tf_idfs.keys():
             print(f"iteration {i}, \"{word}\"")
             update_encoding(word, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
-        normalize_vector()
+        normalize_vector_dimensions()
         with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
             json.dump(iterative_vectors, f, indent=4)
