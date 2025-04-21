@@ -28,7 +28,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 en_stopwords = set(stopwords.words('english'))
 
-with open('data/fairytales_word_scaled_tf-idfs.json', 'r') as f:
+with open('data/fairytales_word_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
     bloom_filters = json.load(f)
