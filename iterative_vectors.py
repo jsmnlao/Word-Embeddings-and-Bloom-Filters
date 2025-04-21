@@ -12,7 +12,9 @@ import spacy
 import lemminflect
 
 nlp = spacy.load('en_core_web_sm', disable=['ner', 'parser'])
-POS = ("CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB")
+POS = ("CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", 
+       "NNP", "NNPS", "NNS", "PDT", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "VB", 
+       "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB")
 
 def lemmatize(word): # Takes a word and uses the spacy lemmatizer to return the lemmatized form
     token = nlp(str(word))[0]
@@ -22,7 +24,9 @@ def lemmatize(word): # Takes a word and uses the spacy lemmatizer to return the 
 
 def tokenize(sentence): # Tokenizes a sentence and lemmatizes the words within
     tokenized = nlp(sentence.translate(str.maketrans('', '', string.punctuation)))
-    return [token.lemma_ for token in tokenized if token.lemma_.lower() not in en_stopwords and wordnet.synsets(token.lemma_)] # disregards lemmatized token if it's in list of stopwords or not in english dictionary (wordnet)
+    return [token.lemma_ for token in tokenized 
+            if token.lemma_.lower() not in en_stopwords 
+            and wordnet.synsets(token.lemma_)] # disregards lemmatized token if it's in list of stopwords or not in english dictionary (wordnet)
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -86,7 +90,8 @@ def normalize_vector(): # vector length is 1
 def normalize_vector_dimensions(iterative_vectors):
     vectors = np.array(list(iterative_vectors.values()))
     vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True) # normalize along rows (words)
-    vectors = vectors / vectors.max(axis=0) # normalize along columns (dimensions)
+    minimums = vectors.min(axis=0)
+    vectors = (vectors - minimums) / (vectors.max(axis=0) - minimums) # normalize along columns (dimensions)
     return {
         word: list(vectors[i]) for i, word in enumerate(iterative_vectors.keys())
     }
