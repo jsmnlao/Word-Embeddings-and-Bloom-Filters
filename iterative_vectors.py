@@ -28,7 +28,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 en_stopwords = set(stopwords.words('english'))
 
-with open('data/fairytales_word_tf-idfs.json', 'r') as f:
+with open('data/fairytales_word_scaled_tf-idfs.json', 'r') as f:
     tf_idfs = json.load(f)
 with open('data/fairytales_word_bloom-filters.json', 'r') as f:
     bloom_filters = json.load(f)
@@ -85,7 +85,8 @@ def normalize_vector(): # vector length is 1
 
 def normalize_vector_dimensions(iterative_vectors):
     vectors = np.array(list(iterative_vectors.values()))
-    vectors = (vectors - vectors.min(axis=0)) / np.ptp(vectors, axis=0) * 2 - 1 # normalize along columns (dimensions)
+    vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True) # normalize along rows (words)
+    vectors = vectors / vectors.max(axis=0) # normalize along columns (dimensions)
     return {
         word: list(vectors[i]) for i, word in enumerate(iterative_vectors.keys())
     }
@@ -95,7 +96,6 @@ def sigmoid_normalize_vectors():
         iterative_vectors[word] = list(2 / (1 + np.exp(-iterative_vectors[word])) - 1) # sigmoid function + scale to pos/neg
 
 if __name__ == '__main__':
-    rescale_bloom_filter()
     ITERATIONS = 20
     iterative_vectors = {}
     for i in range(ITERATIONS): 
