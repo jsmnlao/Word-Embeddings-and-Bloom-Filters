@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import sys
 from nltk.corpus import stopwords, wordnet
 import contextlib
 import numpy as np
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     iterative_vectors = {}
     for i in range(ITERATIONS):
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors)
-        for word in tqdm(list(tf_idfs.keys()), desc=f"Iteration {i}/{ITERATIONS}", ncols=100, position=0, leave=True):
+        for word in tqdm(list(tf_idfs.keys()), desc=f"Iteration {i}/{ITERATIONS}", dynamic_ncols=True, leave=True, file=sys.stdout, ascii=True):
             update_encoding(word, i, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         iterative_vectors = normalize_vector_dimensions(iterative_vectors)
         with open(f'data/iterative_vectors/{i}.json', 'w+') as f:
