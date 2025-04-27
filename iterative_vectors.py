@@ -60,7 +60,7 @@ def generate_vector(word, tokenized_sentence, bits, deltas, iteration):
                 except KeyError:
                     tf_idf = 0
                 if iteration:
-                    np.array(preassign_iterative_vectors[adjacent_word]) * tf_idf
+                    instance_representation += np.array(preassign_iterative_vectors[adjacent_word]) * tf_idf
                 else:
                     instance_representation += np.array(bloom_filters[adjacent_word]) * tf_idf
                 adjacent_words += 1
