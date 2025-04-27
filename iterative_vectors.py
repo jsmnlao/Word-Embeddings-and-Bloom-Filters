@@ -1,7 +1,6 @@
-# pulled content from iterative_vectors.ipynb
-import contextlib
-from nltk.tokenize import sent_tokenize
+from tqdm import tqdm
 from nltk.corpus import stopwords, wordnet
+import contextlib
 import numpy as np
 import scipy
 import contextlib
@@ -104,11 +103,10 @@ if __name__ == '__main__':
     ITERATIONS = 100
     rescale_bloom_filter()
     iterative_vectors = {}
-    for i in range(ITERATIONS): 
-        preassign_iterative_vectors = copy.deepcopy(iterative_vectors) # generates a copy so everything is updated at the end
-        for word in tf_idfs.keys():
-            print(f"iteration {i}, \"{word}\"")
+    for i in range(ITERATIONS):
+        preassign_iterative_vectors = copy.deepcopy(iterative_vectors)
+        for word in tqdm(list(tf_idfs.keys()), desc=f"Iteration {i}/{ITERATIONS}", ncols=100):
             update_encoding(word, i, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
         iterative_vectors = normalize_vector_dimensions(iterative_vectors)
-        with open(f'data/iterative_vectors/{i}.json', 'w+') as f: # save in separate files
+        with open(f'data/iterative_vectors/{i}.json', 'w+') as f:
             json.dump(iterative_vectors, f, indent=4)
