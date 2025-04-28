@@ -101,10 +101,11 @@ def sigmoid_normalize_vectors():
         iterative_vectors[word] = list(2 / (1 + np.exp(-iterative_vectors[word])) - 1) # sigmoid function + scale to pos/neg
 
 if __name__ == '__main__':
-    ITERATIONS = 100
+    ITERATIONS = 400
     rescale_bloom_filter()
-    iterative_vectors = {}
-    for i in range(ITERATIONS):
+    with open('data/iterative_vectors/99.json', 'r') as f:
+        iterative_vectors = json.load(f)
+    for i in range(100, 100+ITERATIONS):
         preassign_iterative_vectors = copy.deepcopy(iterative_vectors)
         for word in tqdm(list(tf_idfs.keys()), desc=f"Iteration {i}/{ITERATIONS}", dynamic_ncols=True, leave=True, file=sys.stdout, ascii=True):
             update_encoding(word, i, {'deltas': [-4, -3, -2, -1, 1, 2, 3, 4], 'bits':32})
