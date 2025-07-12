@@ -1,0 +1,16 @@
+argparse
+numpy
+sys
+tqdm
+nltk
+scipy
+contextlib
+string
+json
+copy
+spacy
+lemminflect
+mmh3
+scikit-learn
+matplotlib
+pandas
