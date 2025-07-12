@@ -1,3 +1,5 @@
+# From https://github.com/stanfordnlp/GloVe
+
 import argparse
 import numpy as np
 
