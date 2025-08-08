@@ -1,0 +1,26 @@
+# MacOS
+.DS_store
+
+# Python
+.env/
+.venv/
+
+# various data files
+data/fairy_tales
+fairytales_word_tf-idf.json
+data/fairytales_word_tf-idfs.json
+data/fairytales_word_tf-idfs_drop.json
+data/iterative_vectors/
+data/iterative_vectors_dropped_tf-idfs/
+data/indiv_word_representations/
+data/fairytales_tokenized.json
+data/fairytales_word_bloom-filters.json
+data/iterative_vectors_sigmoid
+data/fairytales_word_scaled_tf-idfs.json
+data/n_neighbors.json
+data/neighbor_frequencies.json
+data/kqmw_iteration.json
+data/kqmw_iterations
+
+# Misc.
+notes.txt
